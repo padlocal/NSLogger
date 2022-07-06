@@ -275,7 +275,7 @@ NSString *const kMessageColumnWidthsChangedNotification = @"MessageColumnWidthsC
 {
 	NSDictionary *errorSpec = @{@"comment": @"Errors",
 		@"regexp": @"level=0",
-		@"colors": @"bold red"};
+		@"colors": @"#ffffff"};
 
 	NSDictionary *warningSpec = @{@"comment": @"Warnings",
 		@"regexp": @"level=1",
@@ -554,7 +554,7 @@ NSString *const kMessageColumnWidthsChangedNotification = @"MessageColumnWidthsC
 			if ([s length] > 2048)
 				s = [s substringToIndex:2048];
 
-			NSRect lr = [s boundingRectWithSize:sz
+			NSRect lr = [s boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, sz.height)
 										options:(NSStringDrawingOneShot | NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 									 attributes:self.defaultAttributes[@"text"]];
 			sz.height = fminf((float) NSHeight(lr), (float) sz.height);
@@ -591,7 +591,8 @@ NSString *const kMessageColumnWidthsChangedNotification = @"MessageColumnWidthsC
 		sz.height += [self heightForFileLineFunction];
 
 	// cache and return cell height
-	cellSize.height = fmaxf((float) (sz.height + 6), (float) minimumHeight);
+    cellSize.height = fmaxf((float) (sz.height), (float) minimumHeight);
+
 	aMessage.cachedCellSize = cellSize;
 	return cellSize.height;
 }
@@ -881,6 +882,8 @@ NSString *const kMessageColumnWidthsChangedNotification = @"MessageColumnWidthsC
 		CGFloat hintHeight = 0;
 		NSString *hint = nil;
 		NSMutableDictionary *hintAttrs = nil;
+        
+        /*
 		if (truncated)
 		{
 			// display a hint instructing user to double-click message in order
@@ -897,12 +900,14 @@ NSString *const kMessageColumnWidthsChangedNotification = @"MessageColumnWidthsC
 											options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 										 attributes:hintAttrs].size.height;
 		}
+         */
 
 		r.size.height -= hintHeight;
-		[s drawWithRect:r
+		[s drawWithRect:CGRectMake(r.origin.x, r.origin.y, r.size.width - 30.f, r.size.height)
 				options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading | NSStringDrawingTruncatesLastVisibleLine)
 			 attributes:attrs];
 
+        /*
 		// Draw hint "Double click to see all text..." if needed
 		if (hint != nil)
 		{
@@ -912,6 +917,7 @@ NSString *const kMessageColumnWidthsChangedNotification = @"MessageColumnWidthsC
 					   options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 					attributes:hintAttrs];
 		}
+         */
 	}
 	else if (self.message.contentsType == kMessageData)
 	{
@@ -1052,9 +1058,9 @@ NSString *const kMessageColumnWidthsChangedNotification = @"MessageColumnWidthsC
 	CGContextSetLineCap(ctx, kCGLineCapSquare);
 	CGColorRef cellSeparatorColor;
 	if (highlighted)
-		cellSeparatorColor = CGColorCreateGenericGray(1.0f, 1.0f);
+		cellSeparatorColor = CGColorCreateGenericGray(0.1f, 1.0f);
 	else
-		cellSeparatorColor = CGColorCreateGenericGray(0.80f, 1.0f);
+		cellSeparatorColor = CGColorCreateGenericGray(0.2f, 1.0f);
 	CGContextSetStrokeColorWithColor(ctx, cellSeparatorColor);
 	CGColorRelease(cellSeparatorColor);
 	CGContextBeginPath(ctx);
@@ -1064,14 +1070,14 @@ NSString *const kMessageColumnWidthsChangedNotification = @"MessageColumnWidthsC
 	CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), floorf((float) NSMaxY(cellFrame)));
 
 	// timestamp/thread separator
-	CGContextMoveToPoint(ctx, floorf((float) (NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH)), NSMinY(cellFrame));
-	CGContextAddLineToPoint(ctx, floorf((float) (NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH)), floorf((float) (NSMaxY(cellFrame) - 1)));
+//	CGContextMoveToPoint(ctx, floorf((float) (NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH)), NSMinY(cellFrame));
+//	CGContextAddLineToPoint(ctx, floorf((float) (NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH)), floorf((float) (NSMaxY(cellFrame) - 1)));
 
 	// thread/message separator
 	LoggerWindowController *wc = [[[self controlView] window] windowController];
 	CGFloat threadColumnWidth = ([wc isKindOfClass:[LoggerWindowController class]]) ? wc.threadColumnWidth : DEFAULT_THREAD_COLUMN_WIDTH;
-	CGContextMoveToPoint(ctx, floorf((float) (NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth)), NSMinY(cellFrame));
-	CGContextAddLineToPoint(ctx, floorf((float) (NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth)), floorf((float) (NSMaxY(cellFrame) - 1)));
+//	CGContextMoveToPoint(ctx, floorf((float) (NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth)), NSMinY(cellFrame));
+//	CGContextAddLineToPoint(ctx, floorf((float) (NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth)), floorf((float) (NSMaxY(cellFrame) - 1)));
 	CGContextStrokePath(ctx);
 
 	// restore antialiasing
